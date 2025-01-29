@@ -1,7 +1,7 @@
 import Footer from "@/components/common/Footer";
 import Navbar from "@/components/common/Navbar";
 import { Outlet } from "react-router-dom";
-
+import { Toaster } from "@/components/ui/toaster";
 const MainLayout = () => {
   return (
     <div className="min-h-svh flex flex-col">
@@ -10,6 +10,7 @@ const MainLayout = () => {
         <Outlet />
       </div>
       <Footer />
+      <Toaster />
     </div>
   );
 };
