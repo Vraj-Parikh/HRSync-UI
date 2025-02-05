@@ -1,37 +1,13 @@
 import SignUpCard from "@/components/auth/SignUpCard";
 import { useToast } from "@/hooks/use-toast";
 import { GetErrorMessage } from "@/helpers/utils";
-import {
-  contactValidator,
-  emailValidator,
-  nameValidator,
-  passwordValidator,
-} from "@/validation/Form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { ApiResponseSchema } from "@/validation/ApiResponse";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-export type SignUpFormData = {
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  contact_no: string;
-};
-const SignUpSchema = z.object({
-  email: emailValidator,
-  password: passwordValidator,
-  first_name: nameValidator,
-  last_name: nameValidator,
-  contact_no: contactValidator,
-});
+import api from "@/config/axios";
+import { TAuthApiResponseData, TSignUpFormData } from "@/types/Auth";
+import { AuthApiResponseSchema, SignUpSchema } from "@/validation/Auth";
 
-const SignUpApiResponseSchema = ApiResponseSchema.extend({
-  id: z.string().nonempty(),
-});
-type SignUpResponseAPI = z.infer<typeof SignUpApiResponseSchema>;
 function SignUp() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,21 +15,18 @@ function SignUp() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignUpFormData>({ resolver: zodResolver(SignUpSchema) });
-  const submitHandler = async (data: SignUpFormData) => {
+  } = useForm<TSignUpFormData>({ resolver: zodResolver(SignUpSchema) });
+  const submitHandler = async (data: TSignUpFormData) => {
     try {
-      const endpoint = "localhost:8000/api/auth/sign-up";
-      const headers = {};
-      const resp = await axios.post<SignUpResponseAPI>(endpoint, data, {
-        headers: {
-          ...headers,
-        },
-      });
-      SignUpApiResponseSchema.parse(resp.data);
+      const endpoint = "/api/auth/sign-up";
+      const resp = await api.post<TAuthApiResponseData>(endpoint, data);
+      AuthApiResponseSchema.parse(resp.data);
+      const { accessToken } = resp.data;
+      //store in redux
       toast({
         title: "Account Created Successfully !!",
       });
-      navigate("/sign-in");
+      navigate("/dashboard");
     } catch (error: unknown) {
       const errorMessage = GetErrorMessage(error, "Could not sign up");
       toast({

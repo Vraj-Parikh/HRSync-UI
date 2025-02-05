@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
-
+import { useSelector } from "react-redux";
+import { getIsAuthenticated } from "@/redux/slice/AuthSlice";
 const NavLinks = [
   {
     name: "Dashboard",
@@ -16,10 +17,12 @@ const NavLinks = [
   },
 ] as const;
 function Navbar() {
+  const isLoggedIn = useSelector(getIsAuthenticated);
   const navigate = useNavigate();
   const handleOnLogIn = () => {
     navigate("/sign-in");
   };
+  const handleLogout = () => {};
   return (
     <div className="bg-slate-800 text-white py-3.5 md:py-4">
       <div className="flex container justify-between items-center">
@@ -45,9 +48,9 @@ function Navbar() {
           </ul>
           <Button
             className="bg-white text-black font-bold text-base hover:bg-white"
-            onClick={handleOnLogIn}
+            onClick={isLoggedIn ? handleLogout : handleOnLogIn}
           >
-            Sign In
+            {isLoggedIn ? "Log Out" : "Sign In"}
           </Button>
         </div>
       </div>

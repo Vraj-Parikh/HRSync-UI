@@ -1,5 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
+import AddSchedule from "./AddSchedule";
 
 type DatePickerProps = {
   date: Date;
@@ -13,13 +13,14 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
     setDate(newDate);
   };
   return (
-    <div className="">
+    <div className="w-fit mx-auto space-y-4">
       <Calendar
         mode="single"
         selected={date}
         onSelect={handleDateChange}
-        className="rounded-md border"
+        className="rounded-md border p-6"
       />
+      <AddSchedule />
     </div>
   );
 }

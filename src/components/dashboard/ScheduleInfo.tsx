@@ -73,6 +73,15 @@ export type Payment = {
   status: "pending" | "processing" | "success" | "failed";
   email: string;
 };
+export type Schedule = {
+  id: string;
+  start_time: string;
+  end_time: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  contact_no: string;
+};
 export const columns: ColumnDef<Payment>[] = [
   {
     id: "select",
@@ -203,32 +212,6 @@ export function ScheduleInfo() {
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div className="rounded-md border">
         <Table>
