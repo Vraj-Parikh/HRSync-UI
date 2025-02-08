@@ -5,9 +5,10 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { GetErrorMessage } from "@/helpers/utils";
 import { useNavigate } from "react-router-dom";
-import api from "@/config/axios";
 import { TAuthApiResponseData, TSignInFormData } from "@/types/Auth";
-import { AuthApiResponseSchema, SignInSchema } from "@/validation/Auth";
+import { SignInSchema } from "@/validation/Auth";
+import axios from "axios";
+import authApi from "@/config/axiosAuth";
 
 function SignIn() {
   const { toast } = useToast();
@@ -20,16 +21,18 @@ function SignIn() {
   const submitHandler = async (data: TSignInFormData) => {
     try {
       const endpoint = "/api/auth/sign-in";
-      const resp = await api.post<TAuthApiResponseData>(endpoint, data);
-      AuthApiResponseSchema.parse(resp.data);
-      const { accessToken } = resp.data;
-      // store access token in redux
+      await authApi.post<TAuthApiResponseData>(endpoint, data);
       toast({
         title: "Logged In",
       });
       navigate("/dashboard");
     } catch (error) {
-      const errorMessage = GetErrorMessage(error, "Error Signing in");
+      let errorMessage = "";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data.msg;
+      } else {
+        errorMessage = GetErrorMessage(error, "Error Signing in");
+      }
       toast({
         title: errorMessage,
         variant: "destructive",

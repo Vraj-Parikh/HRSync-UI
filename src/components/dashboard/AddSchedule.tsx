@@ -1,60 +1,57 @@
 import { useToast } from "@/hooks/use-toast";
-import { contactValidator, nameValidator } from "@/validation/Form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import AddScheduleForm from "./AddScheduleForm";
-import { Container } from "rsuite";
 import { GetErrorMessage } from "@/helpers/utils";
 import axios from "axios";
 import { ApiResponseSchema } from "@/validation/ApiResponse";
+import { ScheduleFormData } from "@/types/Schedule";
+import { ScheduleFormSchema } from "@/validation/Schedule";
+import mainApi from "@/config/axiosMain";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const FormSchema = z.object({
-  start_time: z.date({ message: "Please Select Time Slot" }),
-  end_time: z.date({ message: "Please Select Time Slot" }),
-  first_name: nameValidator,
-  last_name: nameValidator,
-  email: z.string().email().optional(),
-  contact_no: contactValidator.optional(),
-});
-export type AddScheduleFormData = z.infer<typeof FormSchema>;
-
-function checkIfTimeBeforeOrEqual(start_time: Date, end_time: Date) {
-  const hours1 = start_time.getHours();
-  const minutes1 = start_time.getMinutes();
-
-  const hours2 = end_time.getHours();
-  const minutes2 = end_time.getMinutes();
-
+function checkIfTimeBeforeOrEqual(startDateTime: Date, endDateTime: Date) {
+  const stripSeconds = (date: Date) => new Date(date.setSeconds(0, 0));
+  startDateTime = stripSeconds(startDateTime);
+  endDateTime = stripSeconds(endDateTime);
   let msg = "";
-  if (hours1 === hours2) {
-    if (minutes1 < minutes2) {
-      msg = "End time could not be before start time";
-    } else if (minutes1 === minutes2) {
-      msg = "End time could not be same as start time";
-    }
-  } else if (hours1 < hours2) {
-    msg = "End time could not be before start time";
+  if (endDateTime <= startDateTime) {
+    msg = "End time could not be before or be equal to start time";
   }
   return msg;
 }
 type AddScheduleResponseAPI = z.infer<typeof ApiResponseSchema>;
 function AddSchedule() {
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const navigate = useNavigate();
+  const [showAlertDialog, setShowAlertDialog] = useState(false);
+  const form = useForm<z.infer<typeof ScheduleFormSchema>>({
+    resolver: zodResolver(ScheduleFormSchema),
     defaultValues: {
-      email: "",
-      contact_no: "",
-      first_name: "",
-      last_name: "",
-      start_time: new Date(),
-      end_time: new Date(),
+      candidateEmail: "",
+      candidateContactNum: "",
+      candidateFirstName: "",
+      candidateLastName: "",
+      startDateTime: new Date(),
+      endDateTime: new Date(),
     },
   });
-  const onSubmit = async (data: AddScheduleFormData) => {
-    const { start_time, end_time } = data;
-    let msg = checkIfTimeBeforeOrEqual(start_time, end_time);
+  const onSubmit = async (data: ScheduleFormData) => {
+    const { startDateTime, endDateTime } = data;
+    let msg = checkIfTimeBeforeOrEqual(startDateTime, endDateTime);
     if (msg) {
       toast({
         title: msg,
@@ -62,25 +59,81 @@ function AddSchedule() {
       });
       return;
     }
-
+    const isInterviewMoreThan12Hour =
+      endDateTime.getTime() - startDateTime.getTime() >= 1000 * 60 * 60 * 12;
+    if (isInterviewMoreThan12Hour) {
+      setShowAlertDialog(true);
+      return;
+    }
+    sendDataAPI();
+  };
+  const sendDataAPI = async () => {
     try {
-      const endpoint = "http://localhost:8000/api/schedule/add";
-      const headers = {};
-      const resp = await axios.post<AddScheduleResponseAPI>(endpoint, data, {
-        headers: {
-          ...headers,
-        },
-      });
+      const endpoint = "/api/schedule";
+      const data = form.getValues();
+      const body = {
+        ...data,
+        startDateTime: data.startDateTime.toISOString(),
+        endDateTime: data.endDateTime.toISOString(),
+      };
+      await mainApi.post<AddScheduleResponseAPI>(endpoint, body);
+      toast({ title: "Schedule added" });
+      navigate("../");
     } catch (error) {
-      GetErrorMessage(error, "Could not set schedule");
+      console.error(error);
+      let errorMessage = "";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data.msg;
+      } else {
+        errorMessage = GetErrorMessage(error, "Error Signing in");
+      }
+      toast({
+        title: errorMessage,
+        variant: "destructive",
+      });
     }
   };
   return (
-    <>
-      <Container>
-        <AddScheduleForm form={form} onSubmit={onSubmit} />
-      </Container>
-    </>
+    <div className="flex flex-grow justify-center items-center">
+      <div className="container max-w-2xl px-1.5 sm:px-4">
+        <Card>
+          <CardHeader className="pb-3.5">
+            <CardTitle className="text-center font-bold text-xl tracking-wide border-b-2 border-black pb-2">
+              Schedule Interview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AddScheduleForm form={form} onSubmit={onSubmit} />
+          </CardContent>
+        </Card>
+      </div>
+      <AlertDialog
+        open={showAlertDialog}
+        onOpenChange={(open) => setShowAlertDialog(open)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Long Schedule Warning</AlertDialogTitle>
+            <AlertDialogDescription>
+              This schedule exceeds 12 hours. Are you sure you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowAlertDialog(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowAlertDialog(false);
+                sendDataAPI();
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
 

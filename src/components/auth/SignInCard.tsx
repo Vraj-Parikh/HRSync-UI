@@ -11,12 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import ErrorText from "../common/ErrorText";
-import { SignInFormData } from "@/pages/SignIn";
 import { useNavigate } from "react-router-dom";
+import { TSignInFormData } from "@/types/Auth";
 type SignInProps = {
   submitHandler: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  register: UseFormRegister<SignInFormData>;
-  errors: FieldErrors<SignInFormData>;
+  register: UseFormRegister<TSignInFormData>;
+  errors: FieldErrors<TSignInFormData>;
 };
 export function SignInCard({ submitHandler, register, errors }: SignInProps) {
   const navigate = useNavigate();

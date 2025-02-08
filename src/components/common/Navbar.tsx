@@ -1,7 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
-import { useSelector } from "react-redux";
-import { getIsAuthenticated } from "@/redux/slice/AuthSlice";
+import { getIsAuthenticated, logoutUser } from "@/redux/slice/AuthSlice";
+import { useAppDispatch, useAppSelector } from "@/types/redux";
+import api from "@/config/axiosAuth";
 const NavLinks = [
   {
     name: "Dashboard",
@@ -17,16 +18,28 @@ const NavLinks = [
   },
 ] as const;
 function Navbar() {
-  const isLoggedIn = useSelector(getIsAuthenticated);
+  const dispatch = useAppDispatch();
+  const isLoggedIn = useAppSelector(getIsAuthenticated);
   const navigate = useNavigate();
   const handleOnLogIn = () => {
     navigate("/sign-in");
   };
-  const handleLogout = () => {};
+  const handleLogout = async () => {
+    try {
+      const endpoint = "/api/auth/log-out";
+      await api.get(endpoint);
+      dispatch(logoutUser());
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <div className="bg-slate-800 text-white py-3.5 md:py-4">
       <div className="flex container justify-between items-center">
-        <div className="font-semibold md:text-lg tracking-wide">
+        <div
+          className="font-semibold md:text-lg tracking-wide cursor-pointer"
+          onClick={() => navigate("/")}
+        >
           <h1>Interview Scheduler</h1>
         </div>
         <div className="flex gap-8 md:gap-12 items-center">

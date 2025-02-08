@@ -1,3 +1,4 @@
+import AddSchedule from "@/components/dashboard/AddSchedule";
 import MainLayout from "@/layout/MainLayout";
 import ProtectedRoute from "@/layout/ProtectedRoute";
 import About from "@/pages/About";
@@ -59,6 +60,14 @@ const routes: RouteObject[] = [
         element: (
           <ProtectedRoute authentication>
             <Contact />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/add-schedule",
+        element: (
+          <ProtectedRoute authentication>
+            <AddSchedule />
           </ProtectedRoute>
         ),
       },

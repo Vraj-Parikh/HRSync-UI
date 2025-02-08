@@ -13,9 +13,9 @@ export const AuthApiResponseSchema = ApiResponseSchema.extend({
 export const SignUpSchema = z.object({
   email: emailValidator,
   password: passwordValidator,
-  firstName: nameValidator,
-  lastName: nameValidator,
-  contactNo: contactValidator,
+  firstName: nameValidator("First Name"),
+  lastName: nameValidator("Last Name"),
+  contactNum: contactValidator,
 });
 export const SignInSchema = z.object({
   email: emailValidator,

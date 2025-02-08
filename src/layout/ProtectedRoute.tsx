@@ -1,11 +1,8 @@
-import {
-  getAuthToken,
-  getIsAuthenticated,
-  getStatus,
-} from "@/redux/slice/AuthSlice";
+import { getIsAuthenticated, getStatus } from "@/redux/slice/AuthSlice";
 import { ReactNode, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import Spinner from "@/components/common/Spinner";
+import { useAppSelector } from "@/types/redux";
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -15,8 +12,8 @@ function ProtectedRoute({
   children,
   authentication = false,
 }: ProtectedRouteProps) {
-  const isAuthenticated = useSelector(getIsAuthenticated);
-  const status = useSelector(getStatus);
+  const isAuthenticated = useAppSelector(getIsAuthenticated);
+  const status = useAppSelector(getStatus);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +24,11 @@ function ProtectedRoute({
     }
   }, [status, isAuthenticated, authentication]);
   if (status === "loading") {
-    return <></>;
+    return (
+      <div className="flex flex-grow justify-center items-center">
+        <Spinner />
+      </div>
+    );
   }
   if (status === "failed") {
     return <div className="">Something went wrong</div>;

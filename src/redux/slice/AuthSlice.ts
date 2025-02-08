@@ -1,10 +1,16 @@
-import api from "@/config/axios";
 import { TAuthApiResponseData } from "@/types/Auth";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { GetErrorMessage } from "@/helpers/utils";
 import type { RootState } from "@/types/redux";
 import axios from "axios";
-
+const api = axios.create({
+  baseURL: "http://localhost:8000",
+  timeout: 3000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
 export const fetchData = createAsyncThunk(
   "auth/refresh",
   async (_, ThunkAPI) => {
@@ -12,7 +18,7 @@ export const fetchData = createAsyncThunk(
       const response = await api.get<TAuthApiResponseData>("/api/auth/refresh");
       return response.data.accessToken;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (axios.isAxiosError(error) && error.status === 401) {
         return "";
       }
       const errorMessage = GetErrorMessage(error, "Error fetching data");
@@ -38,10 +44,15 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     updateAccessToken: (state, action) => {
-      state.accessToken = action.payload;
-      state.authenticated = true;
+      if (action.payload) {
+        state.accessToken = action.payload;
+        state.authenticated = true;
+      } else {
+        state.accessToken = "";
+        state.authenticated = false;
+      }
     },
-    logout: (state) => {
+    logoutUser: (state) => {
       state.accessToken = "";
       state.authenticated = false;
     },
@@ -69,5 +80,5 @@ export const getStatus = (state: RootState) => state.auth.status;
 export const getIsAuthenticated = (state: RootState) =>
   state.auth.authenticated;
 
-export const { logout, updateAccessToken } = authSlice.actions;
+export const { logoutUser, updateAccessToken } = authSlice.actions;
 export default authSlice.reducer;

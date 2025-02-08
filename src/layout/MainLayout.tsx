@@ -2,12 +2,11 @@ import Footer from "@/components/common/Footer";
 import Navbar from "@/components/common/Navbar";
 import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { useSelector } from "react-redux";
 import { useEffect } from "react";
-import { useAppDispatch } from "@/types/redux";
+import { useAppDispatch, useAppSelector } from "@/types/redux";
 import { fetchData, getStatus } from "@/redux/slice/AuthSlice";
 const MainLayout = () => {
-  const status = useSelector(getStatus);
+  const status = useAppSelector(getStatus);
 
   const dispatch = useAppDispatch();
   useEffect(() => {

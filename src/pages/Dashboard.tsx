@@ -1,14 +1,15 @@
-import { DatePicker } from "@/components/dashboard/DatePicker";
 import { ScheduleInfo } from "@/components/dashboard/ScheduleInfo";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
-  const [date, setDate] = useState<Date>(new Date());
-
+  const navigate = useNavigate();
   return (
     <div className="flex-grow container flex justify-center py-4">
-      <div className="grid md:grid-cols-2 gap-4">
-        <DatePicker date={date} setDate={setDate} />
+      <div className="">
         <ScheduleInfo />
+        <Button className="w-full" onClick={() => navigate("/add-schedule")}>
+          Add Schedule
+        </Button>
       </div>
     </div>
   );

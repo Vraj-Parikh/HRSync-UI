@@ -11,13 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import ErrorText from "../common/ErrorText";
-import { SignUpFormData } from "@/pages/SignUp";
 import { useNavigate } from "react-router-dom";
+import { TSignUpFormData } from "@/types/Auth";
 
 type SignInProps = {
   submitHandler: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  register: UseFormRegister<SignUpFormData>;
-  errors: FieldErrors<SignUpFormData>;
+  register: UseFormRegister<TSignUpFormData>;
+  errors: FieldErrors<TSignUpFormData>;
 };
 export function SignUpCard({ submitHandler, register, errors }: SignInProps) {
   const navigate = useNavigate();
@@ -41,10 +41,10 @@ export function SignUpCard({ submitHandler, register, errors }: SignInProps) {
                   id="first_name"
                   placeholder="Enter your First Name"
                   type="text"
-                  {...register("first_name", { required: true })}
+                  {...register("firstName", { required: true })}
                 />
-                {errors.first_name && (
-                  <ErrorText>{errors.first_name?.message}</ErrorText>
+                {errors.firstName && (
+                  <ErrorText>{errors.firstName?.message}</ErrorText>
                 )}
               </div>
               <div className="flex flex-col space-y-1.5">
@@ -53,10 +53,10 @@ export function SignUpCard({ submitHandler, register, errors }: SignInProps) {
                   id="last_name"
                   placeholder="Enter your Last Name"
                   type="text"
-                  {...register("last_name", { required: true })}
+                  {...register("lastName", { required: true })}
                 />
-                {errors.last_name && (
-                  <ErrorText>{errors.last_name?.message}</ErrorText>
+                {errors.lastName && (
+                  <ErrorText>{errors.lastName?.message}</ErrorText>
                 )}
               </div>
             </div>
@@ -88,10 +88,10 @@ export function SignUpCard({ submitHandler, register, errors }: SignInProps) {
                 id="contact_no"
                 placeholder="Enter your Contact Number"
                 type="text"
-                {...register("contact_no", { required: true })}
+                {...register("contactNum", { required: true })}
               />
-              {errors.contact_no && (
-                <ErrorText>{errors.contact_no?.message}</ErrorText>
+              {errors.contactNum && (
+                <ErrorText>{errors.contactNum?.message}</ErrorText>
               )}
             </div>
             <Button className="mt-4" type="submit">

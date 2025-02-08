@@ -4,9 +4,10 @@ import { GetErrorMessage } from "@/helpers/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import api from "@/config/axios";
 import { TAuthApiResponseData, TSignUpFormData } from "@/types/Auth";
-import { AuthApiResponseSchema, SignUpSchema } from "@/validation/Auth";
+import { SignUpSchema } from "@/validation/Auth";
+import axios from "axios";
+import authApi from "@/config/axiosAuth";
 
 function SignUp() {
   const { toast } = useToast();
@@ -18,17 +19,20 @@ function SignUp() {
   } = useForm<TSignUpFormData>({ resolver: zodResolver(SignUpSchema) });
   const submitHandler = async (data: TSignUpFormData) => {
     try {
+      console.log(data);
       const endpoint = "/api/auth/sign-up";
-      const resp = await api.post<TAuthApiResponseData>(endpoint, data);
-      AuthApiResponseSchema.parse(resp.data);
-      const { accessToken } = resp.data;
-      //store in redux
+      await authApi.post<TAuthApiResponseData>(endpoint, data);
       toast({
         title: "Account Created Successfully !!",
       });
       navigate("/dashboard");
     } catch (error: unknown) {
-      const errorMessage = GetErrorMessage(error, "Could not sign up");
+      let errorMessage = "";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data.msg;
+      } else {
+        errorMessage = GetErrorMessage(error, "Error Signing in");
+      }
       toast({
         title: errorMessage,
         variant: "destructive",
