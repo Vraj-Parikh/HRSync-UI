@@ -2,14 +2,12 @@ import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import AddScheduleForm from "./AddScheduleForm";
 import { GetErrorMessage } from "@/helpers/utils";
 import axios from "axios";
 import { ApiResponseSchema } from "@/validation/ApiResponse";
-import { ScheduleFormData } from "@/types/Schedule";
-import { ScheduleFormSchema } from "@/validation/Schedule";
+import { type TAddScheduleFormData } from "@/types/Schedule";
+import { AddScheduleFormSchema } from "@/validation/Schedule";
 import mainApi from "@/config/axiosMain";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,9 +18,52 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { ComponentProps, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import ScheduleForm from "../components/dashboard/ScheduleForm";
+import { useAppSelector } from "@/types/redux";
+import { getStatus } from "@/redux/slice/AuthSlice";
 
+export type TCandidateFields = Array<{
+  name: keyof TAddScheduleFormData;
+  label: string;
+  placeholder?: string;
+  type?: ComponentProps<"input">["type"];
+  isSelect?: boolean;
+  selectValues?: {
+    selectPlaceholder?: string;
+    selectOptions?: Record<string, string>;
+  };
+}>;
+const candidateFields: TCandidateFields = [
+  {
+    name: "candidateFirstName",
+    label: "First Name",
+    placeholder: "First name",
+  },
+  {
+    name: "candidateLastName",
+    label: "Last Name",
+    placeholder: "Last name",
+  },
+  {
+    name: "candidateEmail",
+    label: "Email",
+    placeholder: "Email (optional)",
+    type: "email",
+  },
+  {
+    name: "candidateContactNum",
+    label: "Contact Number",
+    placeholder: "Contact (optional)",
+  },
+] as const;
 function checkIfTimeBeforeOrEqual(startDateTime: Date, endDateTime: Date) {
   const stripSeconds = (date: Date) => new Date(date.setSeconds(0, 0));
   startDateTime = stripSeconds(startDateTime);
@@ -34,22 +75,54 @@ function checkIfTimeBeforeOrEqual(startDateTime: Date, endDateTime: Date) {
   return msg;
 }
 type AddScheduleResponseAPI = z.infer<typeof ApiResponseSchema>;
-function AddSchedule() {
+
+type TScheduleInfo = {
+  startDateTime: string;
+  endDateTime: string;
+  interviewStatus: string;
+  candidateFirstName: string;
+  candidateLastName: string;
+  candidateEmail: string;
+  candidateContactNum: string;
+};
+export default function EditSchedule() {
+  const [scheduleInfo, setScheduleInfo] = useState<TScheduleInfo | null>(null);
+  const { scheduleId } = useParams();
   const { toast } = useToast();
+  const status = useAppSelector(getStatus);
   const navigate = useNavigate();
   const [showAlertDialog, setShowAlertDialog] = useState(false);
-  const form = useForm<z.infer<typeof ScheduleFormSchema>>({
-    resolver: zodResolver(ScheduleFormSchema),
+  const form = useForm<z.infer<typeof AddScheduleFormSchema>>({
+    resolver: zodResolver(AddScheduleFormSchema),
     defaultValues: {
-      candidateEmail: "",
-      candidateContactNum: "",
-      candidateFirstName: "",
-      candidateLastName: "",
-      startDateTime: new Date(),
-      endDateTime: new Date(),
+      candidateEmail: scheduleInfo?.candidateEmail,
+      candidateContactNum: scheduleInfo?.candidateContactNum,
+      candidateFirstName: scheduleInfo?.candidateFirstName,
+      candidateLastName: scheduleInfo?.candidateLastName,
+      startDateTime: scheduleInfo?.startDateTime
+        ? new Date(scheduleInfo?.startDateTime)
+        : new Date(),
+      endDateTime: scheduleInfo?.endDateTime
+        ? new Date(scheduleInfo?.endDateTime)
+        : new Date(),
     },
   });
-  const onSubmit = async (data: ScheduleFormData) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const endpoint = `/api/schedule/byId?scheduleId=${scheduleId}`;
+        const resp = await mainApi.get(endpoint);
+        // console.log(resp.data.schedule);
+        setScheduleInfo(resp.data.schedule);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (status === "success") {
+      fetchData();
+    }
+  }, []);
+  const onSubmit = async (data: AddScheduleFormData) => {
     const { startDateTime, endDateTime } = data;
     let msg = checkIfTimeBeforeOrEqual(startDateTime, endDateTime);
     if (msg) {
@@ -78,9 +151,9 @@ function AddSchedule() {
       };
       await mainApi.post<AddScheduleResponseAPI>(endpoint, body);
       toast({ title: "Schedule added" });
-      navigate("../");
+      navigate("/dashboard");
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       let errorMessage = "";
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data.msg;
@@ -93,17 +166,36 @@ function AddSchedule() {
       });
     }
   };
+  useEffect(() => {
+    if (!scheduleInfo) {
+      return;
+    }
+    console.log(scheduleInfo);
+    form.setValue("startDateTime", new Date(scheduleInfo.startDateTime));
+    form.setValue("endDateTime", new Date(scheduleInfo.endDateTime));
+    form.setValue("candidateFirstName", scheduleInfo.candidateFirstName);
+    form.setValue("candidateLastName", scheduleInfo.candidateLastName);
+    form.setValue("candidateEmail", scheduleInfo.candidateEmail);
+    form.setValue("candidateContactNum", scheduleInfo.candidateContactNum);
+  }, [scheduleInfo]);
+  if (!scheduleInfo) {
+    return <></>;
+  }
   return (
     <div className="flex flex-grow justify-center items-center">
       <div className="container max-w-2xl px-1.5 sm:px-4">
         <Card>
           <CardHeader className="pb-3.5">
             <CardTitle className="text-center font-bold text-xl tracking-wide border-b-2 border-black pb-2">
-              Schedule Interview
+              Edit Schedule
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <AddScheduleForm form={form} onSubmit={onSubmit} />
+            <ScheduleForm
+              form={form}
+              onSubmit={onSubmit}
+              candidateFields={candidateFields}
+            />
           </CardContent>
         </Card>
       </div>
@@ -136,5 +228,3 @@ function AddSchedule() {
     </div>
   );
 }
-
-export default AddSchedule;

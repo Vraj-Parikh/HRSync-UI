@@ -17,6 +17,9 @@ function ProtectedRoute({
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (status != "success") {
+      return;
+    }
     if (authentication && authentication !== isAuthenticated) {
       navigate("/sign-in");
     } else if (!authentication && authentication !== isAuthenticated) {

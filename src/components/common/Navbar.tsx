@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { getIsAuthenticated, logoutUser } from "@/redux/slice/AuthSlice";
 import { useAppDispatch, useAppSelector } from "@/types/redux";
 import api from "@/config/axiosAuth";
+import axios from "axios";
 const NavLinks = [
   {
     name: "Dashboard",
@@ -26,8 +27,10 @@ function Navbar() {
   };
   const handleLogout = async () => {
     try {
-      const endpoint = "/api/auth/log-out";
-      await api.get(endpoint);
+      const endpoint = "http://localhost:8000/api/auth/log-out";
+      await axios.get(endpoint, {
+        withCredentials: true,
+      });
       dispatch(logoutUser());
     } catch (error) {
       console.error(error);

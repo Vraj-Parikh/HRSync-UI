@@ -31,7 +31,7 @@ const refreshAccessToken = async (): Promise<string> => {
         return newAccessToken;
       })
       .catch((error) => {
-        console.error("Refresh token failed", error);
+        console.log("Refresh token failed", error);
         throw error;
       })
       .finally(() => {
@@ -43,6 +43,7 @@ const refreshAccessToken = async (): Promise<string> => {
 mainApi.interceptors.response.use(
   (response) => response,
   async (error) => {
+    console.error(error);
     const originalRequest = error.config;
     // If the response is 401 and not a refresh request, try refreshing
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -58,6 +59,7 @@ mainApi.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return mainApi(originalRequest); // Retry original request with new token
       } catch (error) {
+        console.log(error);
         return Promise.reject(error);
       }
     }

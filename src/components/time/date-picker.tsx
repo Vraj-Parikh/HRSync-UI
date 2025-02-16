@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, FileDiff } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,22 +15,28 @@ type DateTimePickerFormProps = {
   value: Date;
   onChange: (...event: any[]) => void;
   className?: ComponentProps<"button">["className"];
+  width?: string;
+  open?: boolean;
 };
 
-export function DateTimePicker({
+export function DatePicker({
   value,
   onChange,
   className,
+  width = "280px",
+  open,
 }: DateTimePickerFormProps) {
+  const widthVal = `w-[${width}]`;
   return (
-    <Popover modal={true}>
+    <Popover {...(open ? { open } : {})}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           className={cn(
-            "w-[280px] justify-start text-left font-normal",
+            "justify-start text-left font-normal border-black",
             !value && "text-muted-foreground",
-            className
+            className,
+            widthVal
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -44,9 +50,6 @@ export function DateTimePicker({
           onSelect={onChange}
           initialFocus
         />
-        <div className="p-3 border-t border-border">
-          <TimePicker setDate={onChange} date={value} />
-        </div>
       </PopoverContent>
     </Popover>
   );

@@ -1,15 +1,9 @@
 import { ScheduleInfo } from "@/components/dashboard/ScheduleInfo";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
-  const navigate = useNavigate();
   return (
     <div className="flex-grow container flex justify-center py-4">
-      <div className="">
+      <div className=" w-10/12 md:w-full mx-auto flex justify-center items-center">
         <ScheduleInfo />
-        <Button className="w-full" onClick={() => navigate("/add-schedule")}>
-          Add Schedule
-        </Button>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { contactValidator, nameValidator } from "./Form";
 
-export const ScheduleFormSchema = z.object({
+export const AddScheduleFormSchema = z.object({
   startDateTime: z.date({ message: "Please Select Time Slot" }),
   endDateTime: z.date({ message: "Please Select Time Slot" }),
   candidateFirstName: nameValidator("First Name"),
@@ -22,4 +22,8 @@ export const ScheduleFormSchema = z.object({
           "Invalid Contact Number",
       }
     ),
+});
+
+export const EditScheduleFormSchema = AddScheduleFormSchema.extend({
+  interviewStatus: z.string(),
 });

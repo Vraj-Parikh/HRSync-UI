@@ -1,4 +1,4 @@
-import AddSchedule from "@/components/dashboard/AddSchedule";
+import AddSchedule from "@/pages/AddSchedule";
 import MainLayout from "@/layout/MainLayout";
 import ProtectedRoute from "@/layout/ProtectedRoute";
 import About from "@/pages/About";
@@ -8,6 +8,7 @@ import { Home } from "@/pages/Home";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import { RouteObject } from "react-router-dom";
+import EditSchedule from "@/pages/EditSchedule";
 
 const routes: RouteObject[] = [
   {
@@ -64,10 +65,18 @@ const routes: RouteObject[] = [
         ),
       },
       {
-        path: "/add-schedule",
+        path: "/schedule/add",
         element: (
           <ProtectedRoute authentication>
             <AddSchedule />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/schedule/edit/:scheduleId",
+        element: (
+          <ProtectedRoute authentication>
+            <EditSchedule />
           </ProtectedRoute>
         ),
       },
