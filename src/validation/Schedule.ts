@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { contactValidator, nameValidator } from "./Form";
+import { InterviewStatusConst } from "@/config/constants";
 
 export const AddScheduleFormSchema = z.object({
   startDateTime: z.date({ message: "Please Select Time Slot" }),
@@ -25,5 +26,5 @@ export const AddScheduleFormSchema = z.object({
 });
 
 export const EditScheduleFormSchema = AddScheduleFormSchema.extend({
-  interviewStatus: z.string(),
+  interviewStatus: z.enum(InterviewStatusConst),
 });

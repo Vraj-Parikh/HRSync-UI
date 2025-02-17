@@ -2,7 +2,9 @@ import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import ScheduleForm from "../components/dashboard/ScheduleForm";
+import AddScheduleForm, {
+  TCandidateFields,
+} from "../components/AddSchedule/AddScheduleForm";
 import { GetErrorMessage } from "@/helpers/utils";
 import axios from "axios";
 import { ApiResponseSchema } from "@/validation/ApiResponse";
@@ -25,15 +27,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ComponentProps, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export type TCandidateFields = Array<{
-  name: keyof TAddScheduleFormData;
-  label: string;
-  placeholder?: string;
-  type?: ComponentProps<"input">["type"];
-}>;
 const candidateFields: TCandidateFields = [
   {
     name: "candidateFirstName",
@@ -114,7 +110,6 @@ function AddSchedule() {
       toast({ title: "Schedule added" });
       navigate("/dashboard");
     } catch (error) {
-      // console.error(error);
       let errorMessage = "";
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data.msg;
@@ -145,7 +140,7 @@ function AddSchedule() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScheduleForm
+            <AddScheduleForm
               form={form}
               onSubmit={onSubmit}
               candidateFields={candidateFields}

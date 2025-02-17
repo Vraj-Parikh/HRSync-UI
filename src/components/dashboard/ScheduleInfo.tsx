@@ -11,6 +11,7 @@ import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ResponsiveDialog } from "../common/responsive-dialog";
 import FilterForm from "./FilterForm";
+import { scheduleLabelConst } from "@/config/constants";
 
 export type TFilters = {
   candidateEmail: string;
@@ -36,6 +37,7 @@ export function ScheduleInfo() {
     endDateTime: null,
     interviewStatus: "",
   });
+  const [defaultTabValue, setDefaultTabValue] = useState("date");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -134,7 +136,11 @@ export function ScheduleInfo() {
           title=""
           showCancelOkBtn={false}
         >
-          <FilterForm filters={filters} setFilters={setFilters} />
+          <FilterForm
+            filters={filters}
+            setFilters={setFilters}
+            defaultTabValue={defaultTabValue}
+          />
         </ResponsiveDialog>
       </div>
       <div className="">
@@ -146,11 +152,22 @@ export function ScheduleInfo() {
                   key={val}
                   className="bg-[#F97316] flex items-center"
                   size={"sm"}
+                  onClick={() => {
+                    if (val.includes("Date")) {
+                      setDefaultTabValue("date");
+                    } else {
+                      setDefaultTabValue(val);
+                    }
+                    setFilterDialogOpen(true);
+                  }}
                 >
-                  <h2>{val}</h2>
+                  <h2>{scheduleLabelConst[val as keyof TFilters]}</h2>
                   <div
                     className="border rounded-full p-0.5 scale-90"
-                    onClick={() => removeFilter(val as keyof TFilters)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFilter(val as keyof TFilters);
+                    }}
                   >
                     <X size={10} />
                   </div>

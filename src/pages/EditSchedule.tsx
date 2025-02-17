@@ -5,8 +5,8 @@ import { z } from "zod";
 import { GetErrorMessage } from "@/helpers/utils";
 import axios from "axios";
 import { ApiResponseSchema } from "@/validation/ApiResponse";
-import { type TAddScheduleFormData } from "@/types/Schedule";
-import { AddScheduleFormSchema } from "@/validation/Schedule";
+import { type TEditScheduleFormData } from "@/types/Schedule";
+import { EditScheduleFormSchema } from "@/validation/Schedule";
 import mainApi from "@/config/axiosMain";
 import {
   AlertDialog,
@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ComponentProps, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -26,21 +26,12 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import ScheduleForm from "../components/dashboard/ScheduleForm";
 import { useAppSelector } from "@/types/redux";
 import { getStatus } from "@/redux/slice/AuthSlice";
+import EditScheduleForm, {
+  TCandidateFields,
+} from "@/components/EditSchedule/EditScheduleForm";
 
-export type TCandidateFields = Array<{
-  name: keyof TAddScheduleFormData;
-  label: string;
-  placeholder?: string;
-  type?: ComponentProps<"input">["type"];
-  isSelect?: boolean;
-  selectValues?: {
-    selectPlaceholder?: string;
-    selectOptions?: Record<string, string>;
-  };
-}>;
 const candidateFields: TCandidateFields = [
   {
     name: "candidateFirstName",
@@ -92,19 +83,16 @@ export default function EditSchedule() {
   const status = useAppSelector(getStatus);
   const navigate = useNavigate();
   const [showAlertDialog, setShowAlertDialog] = useState(false);
-  const form = useForm<z.infer<typeof AddScheduleFormSchema>>({
-    resolver: zodResolver(AddScheduleFormSchema),
+  const form = useForm<TEditScheduleFormData>({
+    resolver: zodResolver(EditScheduleFormSchema),
     defaultValues: {
-      candidateEmail: scheduleInfo?.candidateEmail,
-      candidateContactNum: scheduleInfo?.candidateContactNum,
-      candidateFirstName: scheduleInfo?.candidateFirstName,
-      candidateLastName: scheduleInfo?.candidateLastName,
-      startDateTime: scheduleInfo?.startDateTime
-        ? new Date(scheduleInfo?.startDateTime)
-        : new Date(),
-      endDateTime: scheduleInfo?.endDateTime
-        ? new Date(scheduleInfo?.endDateTime)
-        : new Date(),
+      candidateFirstName: "",
+      candidateLastName: "",
+      candidateEmail: "",
+      candidateContactNum: "",
+      startDateTime: new Date(),
+      endDateTime: new Date(),
+      interviewStatus: "PENDING",
     },
   });
   useEffect(() => {
@@ -122,7 +110,7 @@ export default function EditSchedule() {
       fetchData();
     }
   }, []);
-  const onSubmit = async (data: AddScheduleFormData) => {
+  const onSubmit = async (data: TEditScheduleFormData) => {
     const { startDateTime, endDateTime } = data;
     let msg = checkIfTimeBeforeOrEqual(startDateTime, endDateTime);
     if (msg) {
@@ -145,12 +133,13 @@ export default function EditSchedule() {
       const endpoint = "/api/schedule";
       const data = form.getValues();
       const body = {
+        scheduleId,
         ...data,
         startDateTime: data.startDateTime.toISOString(),
         endDateTime: data.endDateTime.toISOString(),
       };
-      await mainApi.post<AddScheduleResponseAPI>(endpoint, body);
-      toast({ title: "Schedule added" });
+      await mainApi.put<AddScheduleResponseAPI>(endpoint, body);
+      toast({ title: "Schedule Updated" });
       navigate("/dashboard");
     } catch (error) {
       // console.error(error);
@@ -170,13 +159,21 @@ export default function EditSchedule() {
     if (!scheduleInfo) {
       return;
     }
-    console.log(scheduleInfo);
-    form.setValue("startDateTime", new Date(scheduleInfo.startDateTime));
-    form.setValue("endDateTime", new Date(scheduleInfo.endDateTime));
-    form.setValue("candidateFirstName", scheduleInfo.candidateFirstName);
-    form.setValue("candidateLastName", scheduleInfo.candidateLastName);
-    form.setValue("candidateEmail", scheduleInfo.candidateEmail);
-    form.setValue("candidateContactNum", scheduleInfo.candidateContactNum);
+    form.reset({
+      startDateTime: new Date(scheduleInfo.startDateTime),
+      endDateTime: new Date(scheduleInfo.endDateTime),
+      candidateFirstName: scheduleInfo.candidateFirstName,
+      candidateLastName: scheduleInfo.candidateLastName,
+      candidateEmail: scheduleInfo.candidateEmail || "",
+      candidateContactNum: scheduleInfo.candidateContactNum || "",
+      interviewStatus: scheduleInfo.interviewStatus as
+        | "PENDING"
+        | "FINISHED"
+        | "NO-SHOW"
+        | "REJECTED"
+        | "SELECTED"
+        | "HOLD",
+    });
   }, [scheduleInfo]);
   if (!scheduleInfo) {
     return <></>;
@@ -191,7 +188,7 @@ export default function EditSchedule() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScheduleForm
+            <EditScheduleForm
               form={form}
               onSubmit={onSubmit}
               candidateFields={candidateFields}

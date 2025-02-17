@@ -1,23 +1,32 @@
 import { DateTimePicker } from "../time/date-time-picker";
-import { TCandidateFields } from "@/pages/AddSchedule";
-import { type TEditScheduleFormData } from "@/types/Schedule";
-import { UseFormReturn } from "react-hook-form";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Card, CardContent, CardFooter } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { setDate } from "date-fns";
 import { useState } from "react";
 import { Separator } from "../ui/separator";
 import { TFilters } from "./ScheduleInfo";
-
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { InterviewStatusConst } from "@/config/constants";
 type FilterFormProps = {
   filters: TFilters;
   setFilters: React.Dispatch<React.SetStateAction<TFilters>>;
+  defaultTabValue?: string;
 };
 
-function FilterForm({ filters, setFilters }: FilterFormProps) {
+function FilterForm({
+  filters,
+  setFilters,
+  defaultTabValue = "date",
+}: FilterFormProps) {
   const [startDateTime, setStartDateTime] = useState(
     filters.startDateTime || new Date()
   );
@@ -28,6 +37,9 @@ function FilterForm({ filters, setFilters }: FilterFormProps) {
   const [lastName, setLastName] = useState(filters.candidateLastName);
   const [email, setEmail] = useState(filters.candidateEmail);
   const [contactNum, setContactNum] = useState(filters.candidateContactNum);
+  const [interviewStatus, setInterviewStatus] = useState(
+    filters.interviewStatus
+  );
 
   const removeFilter = (filterName: keyof typeof filters) => {
     if (filterName === "startDateTime" || filterName === "endDateTime") {
@@ -48,21 +60,20 @@ function FilterForm({ filters, setFilters }: FilterFormProps) {
   ) => {
     setFilters((prev) => ({ ...prev, [filterName]: filterValue }));
   };
-  console.log(filters);
   return (
-    <Tabs defaultValue="date" className="w-full">
+    <Tabs defaultValue={defaultTabValue} className="w-full">
       <div className="">
         <TabsList className="grid w-full grid-cols-2 rounded-b-none">
           <TabsTrigger value="date">Date</TabsTrigger>
-          <TabsTrigger value="status">Status</TabsTrigger>
+          <TabsTrigger value="interviewStatus">Status</TabsTrigger>
         </TabsList>
         <TabsList className="grid w-full grid-cols-2 rounded-b-none rounded-t-none">
-          <TabsTrigger value="firstName">First Name</TabsTrigger>
-          <TabsTrigger value="lastName">Last Name</TabsTrigger>
+          <TabsTrigger value="candidateFirstName">First Name</TabsTrigger>
+          <TabsTrigger value="candidateLastName">Last Name</TabsTrigger>
         </TabsList>
         <TabsList className="grid w-full grid-cols-2 rounded-t-none">
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="contactNum">Contact Number</TabsTrigger>
+          <TabsTrigger value="candidateEmail">Email</TabsTrigger>
+          <TabsTrigger value="candidateContactNum">Contact Number</TabsTrigger>
         </TabsList>
       </div>
       <TabsContent value="date">
@@ -116,7 +127,50 @@ function FilterForm({ filters, setFilters }: FilterFormProps) {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="firstName">
+      <TabsContent value="interviewStatus">
+        <Card>
+          <CardContent className="space-y-4 py-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={interviewStatus}
+                onValueChange={(val) => setInterviewStatus(val)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {InterviewStatusConst.map((val) => (
+                      <SelectItem value={val} key={val}>
+                        {val}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-between">
+              <Button
+                onClick={() => {
+                  setInterviewStatus("");
+                  removeFilter("candidateFirstName");
+                }}
+              >
+                Remove Filter
+              </Button>
+              <Button
+                onClick={() =>
+                  addFilterString("interviewStatus", interviewStatus)
+                }
+              >
+                Apply Filter
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="candidateFirstName">
         <Card>
           <CardContent className="space-y-4 py-4">
             <div className="flex flex-col gap-2">
@@ -145,7 +199,7 @@ function FilterForm({ filters, setFilters }: FilterFormProps) {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="lastName">
+      <TabsContent value="candidateLastName">
         <Card>
           <CardContent className="space-y-4 py-4">
             <div className="flex flex-col gap-2">
@@ -174,7 +228,7 @@ function FilterForm({ filters, setFilters }: FilterFormProps) {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="email">
+      <TabsContent value="candidateEmail">
         <Card>
           <CardContent className="space-y-4 py-4">
             <div className="flex flex-col gap-2">
@@ -201,7 +255,7 @@ function FilterForm({ filters, setFilters }: FilterFormProps) {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="contactNum">
+      <TabsContent value="candidateContactNum">
         <Card>
           <CardContent className="space-y-4 py-4">
             <div className="flex flex-col gap-2">

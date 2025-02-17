@@ -261,6 +261,7 @@ function ScheduleTable({
         title="Are you absolutely sure?"
         description="This action cannot be undone. This will permanently delete this schedule"
         onOkClick={onOkClickDelete}
+        showCancelOkBtn
       >
         <></>
       </ResponsiveDialog>
@@ -270,6 +271,7 @@ function ScheduleTable({
         title="Are you absolutely sure?"
         description={`This action cannot be undone. This will permanently delete all the ${selectedRowsId.length} selected schedules`}
         onOkClick={() => onOkClickDeleteSelected(selectedRowsId)}
+        showCancelOkBtn
       >
         <></>
       </ResponsiveDialog>

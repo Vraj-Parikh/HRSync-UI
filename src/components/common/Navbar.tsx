@@ -2,22 +2,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { getIsAuthenticated, logoutUser } from "@/redux/slice/AuthSlice";
 import { useAppDispatch, useAppSelector } from "@/types/redux";
-import api from "@/config/axiosAuth";
 import axios from "axios";
-const NavLinks = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-  },
-  {
-    name: "About",
-    href: "/about",
-  },
-  {
-    name: "Contact",
-    href: "/contact",
-  },
-] as const;
+import { NavLinks } from "@/config/Navlinks";
+
 function Navbar() {
   const dispatch = useAppDispatch();
   const isLoggedIn = useAppSelector(getIsAuthenticated);

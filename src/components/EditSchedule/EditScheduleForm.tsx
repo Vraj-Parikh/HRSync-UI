@@ -9,25 +9,51 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import type { TAddScheduleFormData } from "@/types/Schedule";
+import type { TEditScheduleFormData } from "@/types/Schedule";
 import { Button } from "../ui/button";
 import { DateTimePicker } from "../time/date-time-picker";
-import { TCandidateFields } from "@/pages/AddSchedule";
+import { ComponentProps } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { InterviewStatusConst } from "@/config/constants";
 
-type ScheduleFormProps = {
-  form: UseFormReturn<TAddScheduleFormData>;
-  onSubmit: (data: TAddScheduleFormData) => void;
+export type TCandidateFields = Array<{
+  name: keyof TEditScheduleFormData;
+  label: string;
+  placeholder?: string;
+  type?: ComponentProps<"input">["type"];
+}>;
+type EditScheduleFormProps = {
+  form: UseFormReturn<TEditScheduleFormData>;
+  onSubmit: (data: TEditScheduleFormData) => void;
   candidateFields: TCandidateFields;
   submitText?: string;
 };
-export default function ScheduleForm({
+export default function EditScheduleForm({
   form,
   onSubmit,
   candidateFields,
   submitText = "Submit",
-}: ScheduleFormProps) {
+}: EditScheduleFormProps) {
+  console.log(form.getValues());
   return (
     <Form {...form}>
+      <Button
+        onClick={() => {
+          try {
+            form.setValue("candidateFirstName", "Hello");
+          } catch (error) {
+            console.log(error);
+          }
+        }}
+      >
+        Test
+      </Button>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-1 sm:gap-4 md:gap-16">
           <div className="">
@@ -100,6 +126,7 @@ export default function ScheduleForm({
                         placeholder={placeholder}
                         type={type}
                         onChange={field.onChange}
+                        value={field.value as string}
                       />
                     </div>
                     <FormMessage>Error Placeholder</FormMessage>
@@ -108,6 +135,37 @@ export default function ScheduleForm({
               />
             )
           )}
+          <FormField
+            control={form.control}
+            name={"interviewStatus"}
+            render={({ field }) => (
+              <FormItem className="space-y-0.5">
+                <div className="grid grid-cols-3 items-center gap-1.5 sm:gap-4">
+                  <FormLabel className="text-black" htmlFor={"interviewStatus"}>
+                    Interview Status
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {InterviewStatusConst.map((val) => (
+                        <SelectItem value={val} key={val}>
+                          {val}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <FormMessage>Error Placeholder</FormMessage>
+              </FormItem>
+            )}
+          />
         </div>
         <Button type="submit" className="w-full sm:mt-4">
           {submitText}
